@@ -1,12 +1,18 @@
-require('dotenv').config()
 
+require('dotenv').config();
+
+const URL= process.env.MONGO_URI;
 
 const express = require('express')
 const app = express()
 const mongoose = require('mongoose');
 const createHttpError = require('http-errors')
+const bcrypt=require('bcrypt')
+const UserModel=require('./model/user.js')
+
 
 const port = process.env.PORT
+app.use(express.json())
 
 app.get('/', (req, res,next) => {
   try {
@@ -39,14 +45,47 @@ app.use((err, req, res, next)=> {
 // -user/error
 
 app.post('/api/v1/users',async(req,res,next) => {
+  console.log(req.body);
+const email=req.body.email;
+const password=req.body.password
+const name=req.body.name
+
   try {
-    if(!req.body)
+    if(!email || !password || !name) {   
+      throw createHttpError (400,'Missing required parameters')
+    }
+
+    const isUserAvailable=await UserModel.findOne({ email:email}).exec();
+    if(isUserAvailable) {
+      throw createHttpError(400,'User already exists')
+    }
+
+    const hashedHttpError=await bcrypt.hash(password,12);
+
+    const user=new UserModel({
+      name:name,
+      email:email,
+      password:password,
+      
+    })
+
+    const result = await user.save();
+    res.status(201).send(result);
+
+
 
   }catch(error) {
+    next(error);
 
   }
 
 })
+
+
+
+console.log('MONGO_URL:', process.env.MONGO_URI);
+
+mongoose.connect(process.env.MONGO_URI, {
 
   }).then(() => {
     console.log('db connected');
@@ -57,10 +96,6 @@ app.post('/api/v1/users',async(req,res,next) => {
     console.error('Connection error:', err);
   });
   
-// mongoose.connect(
-//     process.env.MONGO_URL,
-//     {}).then(result=>{
-//         console.log('db connected')
-//     }).catch(err => console.log(err))
+
     
     
