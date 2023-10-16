@@ -8,11 +8,13 @@ const app = express()
 const mongoose = require('mongoose');
 const createHttpError = require('http-errors')
 const bcrypt=require('bcrypt')
-const UserModel=require('./model/user.js')
-
+const UserModel=require('./model/user')
+const UserRouter=require('./router/user')
 
 const port = process.env.PORT
 app.use(express.json())
+
+app.use('/api/v1/users',UserRouter);
 
 app.get('/', (req, res,next) => {
   try {
@@ -85,16 +87,7 @@ const name=req.body.name
 
 console.log('MONGO_URL:', process.env.MONGO_URI);
 
-mongoose.connect(process.env.MONGO_URI, {
-
-  }).then(() => {
-    console.log('db connected');
-    app.listen(port, () => {
-        console.log(`Example app listening on port ${port}`)
-      })
-  }).catch((err) => {
-    console.error('Connection error:', err);
-  });
+module.exports=app;
   
 
     
