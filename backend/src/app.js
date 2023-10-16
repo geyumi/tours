@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 const createHttpError = require('http-errors')
 const bcrypt=require('bcrypt')
 const UserModel=require('./model/user')
-const UserRouter=require('./router/user')
+const UserRouter=require('./routes/user')
 
 const port = process.env.PORT
 app.use(express.json())
@@ -46,42 +46,7 @@ app.use((err, req, res, next)=> {
 
 // -user/error
 
-app.post('/api/v1/users',async(req,res,next) => {
-  console.log(req.body);
-const email=req.body.email;
-const password=req.body.password
-const name=req.body.name
-
-  try {
-    if(!email || !password || !name) {   
-      throw createHttpError (400,'Missing required parameters')
-    }
-
-    const isUserAvailable=await UserModel.findOne({ email:email}).exec();
-    if(isUserAvailable) {
-      throw createHttpError(400,'User already exists')
-    }
-
-    const hashedHttpError=await bcrypt.hash(password,12);
-
-    const user=new UserModel({
-      name:name,
-      email:email,
-      password:password,
-      
-    })
-
-    const result = await user.save();
-    res.status(201).send(result);
-
-
-
-  }catch(error) {
-    next(error);
-
-  }
-
-})
+//app.post('/api/v1/users',)
 
 
 
